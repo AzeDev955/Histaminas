@@ -6,6 +6,7 @@ import {
   View,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ItemCard from "@/components/Itemcard";
@@ -13,7 +14,7 @@ import CategoryCard from "../../components/CategoryCard";
 import SearchBar from "../../components/SearchBar";
 import { Ionicons } from "@expo/vector-icons";
 import { getHistaminaConfig } from "../../utils/helpers";
-import { initDb } from "../../database/db";
+import { initDb, resetDatabase } from "../../database/db";
 import { seedDatabaseIfNeeded } from "../../database/seed";
 import { useFoods } from "../../hooks/useFoods";
 import { router } from "expo-router";
@@ -77,6 +78,38 @@ export default function HomeScreen() {
     setSearch("");
   };
 
+  const manejarResetDb = () => {
+    Alert.alert(
+      "Resetear base de datos",
+      "Se borrarán los cambios locales y se volverá a cargar el catálogo base. ¿Quieres continuar?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Resetear",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setReady(false);
+
+              await resetDatabase();
+              await initDb();
+              await seedDatabaseIfNeeded();
+              await refresh();
+
+              volverAlIndice();
+              setReady(true);
+
+              Alert.alert("Hecho", "La base de datos se ha restaurado.");
+            } catch (error) {
+              setReady(true);
+              Alert.alert("Error", "No se pudo resetear la base de datos.");
+            }
+          },
+        },
+      ],
+    );
+  };
+
   if (!ready || loading) {
     return (
       <SafeAreaView style={styles.loaderContainer}>
@@ -123,6 +156,11 @@ export default function HomeScreen() {
       >
         <Ionicons name="add-circle-outline" size={20} color="#FFF" />
         <Text style={styles.addButtonText}>Añadir alimento</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.resetButton} onPress={manejarResetDb}>
+        <Ionicons name="refresh-outline" size={20} color="#FFF" />
+        <Text style={styles.resetButtonText}>Resetear base de datos</Text>
       </TouchableOpacity>
 
       <View style={styles.histaminaFilterContainer}>
@@ -254,6 +292,22 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   addButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "800",
+  },
+  resetButton: {
+    marginHorizontal: 20,
+    marginBottom: 16,
+    backgroundColor: "#FF3B30",
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+  },
+  resetButtonText: {
     color: "#FFF",
     fontSize: 16,
     fontWeight: "800",

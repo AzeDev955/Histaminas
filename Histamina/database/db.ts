@@ -38,3 +38,13 @@ export async function initDb() {
     );
   `);
 }
+
+export async function resetDatabase() {
+  const db = await getDb();
+
+  await db.withTransactionAsync(async () => {
+    await db.runAsync(`DELETE FROM alimentos`);
+    await db.runAsync(`DELETE FROM categorias`);
+    await db.runAsync(`DELETE FROM app_meta`);
+  });
+}
