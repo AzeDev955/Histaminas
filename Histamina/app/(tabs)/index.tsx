@@ -1,75 +1,56 @@
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   StyleSheet,
   Text,
   FlatList,
   View,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MOCK_DATA } from "../../constants/alimentos";
 import ItemCard from "@/components/Itemcard";
 import CategoryCard from "../../components/CategoryCard";
 import SearchBar from "../../components/SearchBar";
 import { Ionicons } from "@expo/vector-icons";
-import { getHistaminaConfig } from "../../utils/helpers"; // Importamos para los colores de los botones
+import { getHistaminaConfig } from "../../utils/helpers";
+import { initDb } from "../../database/db";
+import { seedDatabaseIfNeeded } from "../../database/seed";
+import { useFoods } from "../../hooks/useFoods";
+import { router } from "expo-router";
 
 export default function HomeScreen() {
   const [search, setSearch] = useState("");
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<
     string | null
   >(null);
-  // Nuevo estado para el filtro por botones (0, 1, 2, 3 o null si no hay ninguno seleccionado)
   const [filtroHistamina, setFiltroHistamina] = useState<number | null>(null);
+  const [ready, setReady] = useState(false);
 
-  // 1. Extraemos las categorías del JSON para el índice
-  const categorias = useMemo(() => {
-    return Object.keys(MOCK_DATA.alimentos).map((key) => ({
-      id: key,
-      nombre: key.charAt(0).toUpperCase() + key.slice(1),
-      cantidad: Object.keys((MOCK_DATA.alimentos as any)[key]).length,
-      icon: (() => {
-        switch (key) {
-          case "verduras":
-            return "leaf";
-          case "frutas":
-            return "nutrition";
-          case "lacteos y huevos":
-            return "water";
-          case "carnes":
-            return "egg";
-          case "pescados y mariscos":
-            return "boat";
-          case "bebidas":
-            return "beer";
-          case "especias y condimentos":
-            return "flame";
-          default:
-            return "restaurant";
-        }
-      })(),
-    }));
-  }, []);
+  const { foods, categories, loading, refresh } = useFoods();
 
-  // 2. Lógica de filtrado combinado
+  useEffect(() => {
+    (async () => {
+      await initDb();
+      await seedDatabaseIfNeeded();
+      await refresh();
+      setReady(true);
+    })();
+  }, [refresh]);
+
   const alimentosFiltrados = useMemo(() => {
-    let lista: any[] = [];
+    let lista = foods.map((item) => ({
+      id: String(item.id),
+      dbId: item.id,
+      categoriaId: item.categoria_slug,
+      categoria: item.categoria_slug
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase()),
+      nombre: item.nombre,
+      histamina: item.histamina,
+    }));
+
     let hayFiltroActivo = false;
 
-    // Aplanamos los datos
-    Object.keys(MOCK_DATA.alimentos).forEach((cat) => {
-      const items = (MOCK_DATA.alimentos as any)[cat];
-      Object.keys(items).forEach((key) => {
-        lista.push({
-          id: `${cat}-${key}`,
-          categoriaId: cat,
-          categoria: cat.charAt(0).toUpperCase() + cat.slice(1),
-          ...items[key],
-        });
-      });
-    });
-
-    // Aplicamos filtro por búsqueda de texto
     if (search) {
       lista = lista.filter((a) =>
         a.nombre.toLowerCase().includes(search.toLowerCase()),
@@ -77,28 +58,33 @@ export default function HomeScreen() {
       hayFiltroActivo = true;
     }
 
-    // Aplicamos filtro por categoría
     if (categoriaSeleccionada) {
       lista = lista.filter((a) => a.categoriaId === categoriaSeleccionada);
       hayFiltroActivo = true;
     }
 
-    // Aplicamos filtro por nivel de histamina (los botones)
     if (filtroHistamina !== null) {
       lista = lista.filter((a) => a.histamina === filtroHistamina);
       hayFiltroActivo = true;
     }
 
-    // Si no hay ningún filtro de ningún tipo, devolvemos null para renderizar el índice
     return hayFiltroActivo ? lista : null;
-  }, [search, categoriaSeleccionada, filtroHistamina]);
+  }, [foods, search, categoriaSeleccionada, filtroHistamina]);
 
-  // Función para volver al índice limpiando los filtros
   const volverAlIndice = () => {
     setCategoriaSeleccionada(null);
     setFiltroHistamina(null);
     setSearch("");
   };
+
+  if (!ready || loading) {
+    return (
+      <SafeAreaView style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text style={styles.loaderText}>Cargando alimentos…</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -121,7 +107,6 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        {/* Texto informativo, visible solo en la pantalla de inicio principal */}
         {!search && !categoriaSeleccionada && (
           <Text style={styles.infoSubtitle}>
             Puedes comer cualquier cosa del nivel 0 y 1. El nivel 2 hay que
@@ -132,7 +117,14 @@ export default function HomeScreen() {
 
       <SearchBar value={search} onChangeText={setSearch} />
 
-      {/* NUEVO: Botonera de Filtros de Histamina */}
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => router.push("/nuevo-alimento")}
+      >
+        <Ionicons name="add-circle-outline" size={20} color="#FFF" />
+        <Text style={styles.addButtonText}>Añadir alimento</Text>
+      </TouchableOpacity>
+
       <View style={styles.histaminaFilterContainer}>
         {[0, 1, 2, 3].map((nivel) => {
           const config = getHistaminaConfig(nivel);
@@ -161,10 +153,9 @@ export default function HomeScreen() {
         })}
       </View>
 
-      {/* RENDERIZADO CONDICIONAL: Índice o Lista */}
       {alimentosFiltrados === null && !search ? (
         <FlatList
-          data={categorias}
+          data={categories}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <CategoryCard
@@ -179,7 +170,7 @@ export default function HomeScreen() {
         />
       ) : (
         <FlatList
-          data={alimentosFiltrados}
+          data={alimentosFiltrados ?? []}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <ItemCard item={item} />}
           contentContainerStyle={styles.listContainer}
@@ -197,9 +188,18 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F5F5F7" },
-  headerContainer: {
-    marginBottom: 5,
+  loaderContainer: {
+    flex: 1,
+    backgroundColor: "#F5F5F7",
+    justifyContent: "center",
+    alignItems: "center",
   },
+  loaderText: {
+    marginTop: 12,
+    color: "#6B7280",
+    fontSize: 15,
+  },
+  headerContainer: { marginBottom: 5 },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -218,32 +218,44 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   listContainer: { paddingHorizontal: 20, paddingBottom: 20 },
-  emptyText: {
-    textAlign: "center",
-    marginTop: 50,
-    color: "#8E8E93",
-    fontSize: 16,
-  },
-
-  // Estilos de los nuevos botones
   histaminaFilterContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    marginBottom: 20,
+    justifyContent: "center",
     gap: 8,
+    marginHorizontal: 20,
+    marginBottom: 16,
+    flexWrap: "wrap",
   },
   histaminaButton: {
-    flex: 1,
-    paddingVertical: 8,
-    borderRadius: 8,
     borderWidth: 1.5,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#FFF",
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
   },
   histaminaButtonText: {
-    fontSize: 13,
     fontWeight: "700",
+    fontSize: 14,
+  },
+  emptyText: {
+    textAlign: "center",
+    color: "#8E8E93",
+    fontSize: 15,
+    marginTop: 30,
+  },
+  addButton: {
+    marginHorizontal: 20,
+    marginBottom: 16,
+    backgroundColor: "#007AFF",
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+  },
+  addButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "800",
   },
 });

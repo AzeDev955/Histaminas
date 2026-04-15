@@ -1,11 +1,11 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-// Asumimos que pondremos helpers en una carpeta utils en la raíz
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { router } from "expo-router";
 import { getHistaminaConfig } from "../utils/helpers";
 
-// Definimos la forma de nuestros datos
 interface Alimento {
   id: string;
+  dbId?: number;
   nombre: string;
   categoria: string;
   histamina: number;
@@ -18,18 +18,32 @@ interface Props {
 export default function ItemCard({ item }: Props) {
   const config = getHistaminaConfig(item.histamina);
 
+  const onPress = () => {
+    if (!item.dbId) return;
+
+    router.push({
+      pathname: "/editar-alimento/[id]",
+      params: { id: String(item.dbId) },
+    });
+  };
+
   return (
-    <View style={[styles.card, { borderLeftColor: config.color }]}>
+    <TouchableOpacity
+      activeOpacity={0.75}
+      onPress={onPress}
+      style={[styles.card, { borderLeftColor: config.color }]}
+    >
       <View style={styles.info}>
         <Text style={styles.nombre}>{item.nombre}</Text>
         <Text style={styles.categoria}>{item.categoria}</Text>
       </View>
+
       <View style={[styles.badge, { backgroundColor: config.color + "20" }]}>
         <Text style={[styles.badgeText, { color: config.color }]}>
           {config.texto}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
