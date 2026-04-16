@@ -17,6 +17,7 @@ export async function getFoodById(id: number) {
     `SELECT id, categoria_slug, clave, nombre, estado, histamina, notas
  FROM alimentos
  WHERE id = ?`,
+    [id],
   );
 }
 

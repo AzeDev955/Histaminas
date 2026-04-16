@@ -17,7 +17,9 @@ import {
 } from "../../database/foods";
 
 export default function EditarAlimentoScreen() {
-  const params = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams();
+  const rawId = Array.isArray(params.id) ? params.id[0] : params.id;
+  const parsedId = rawId ? Number(rawId) : null;
 
   const [foodId, setFoodId] = useState<number | null>(null);
   const [nombre, setNombre] = useState("");
@@ -31,30 +33,38 @@ export default function EditarAlimentoScreen() {
 
   useEffect(() => {
     (async () => {
-      const id = Number(params.id);
-      if (!id) return;
+      try {
+        if (!parsedId || Number.isNaN(parsedId)) {
+          console.error("ID inválido en editar-alimento:", params.id);
+          setLoading(false);
+          return;
+        }
 
-      const [food, categoryRows] = await Promise.all([
-        getFoodById(id),
-        getCategorySlugs(),
-      ]);
+        const [food, categoryRows] = await Promise.all([
+          getFoodById(parsedId),
+          getCategorySlugs(),
+        ]);
 
-      const slugs = categoryRows.map((r) => r.categoria_slug);
-      setCategorias(slugs);
+        const slugs = categoryRows.map((r) => r.categoria_slug);
+        setCategorias(slugs);
 
-      if (food) {
-        setFoodId(food.id);
-        setNombre(food.nombre);
-        setClave(food.clave);
-        setCategoriaSlug(food.categoria_slug);
-        setEstado(food.estado);
-        setHistamina(food.histamina);
-        setNotas(food.notas ?? "");
+        if (food) {
+          setFoodId(food.id);
+          setNombre(food.nombre);
+          setClave(food.clave);
+          setCategoriaSlug(food.categoria_slug);
+          setEstado(food.estado);
+          setHistamina(food.histamina);
+          setNotas(food.notas ?? "");
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.error("Error cargando alimento:", error);
+        setLoading(false);
       }
-
-      setLoading(false);
     })();
-  }, [params.id]);
+  }, [parsedId]);
 
   const guardar = async () => {
     if (!foodId) return;
