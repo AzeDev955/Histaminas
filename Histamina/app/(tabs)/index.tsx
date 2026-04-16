@@ -17,11 +17,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { getHistaminaConfig } from "../../utils/helpers";
 import { initDb, resetDatabase } from "../../database/db";
 import { seedDatabaseIfNeeded } from "../../database/seed";
-import { useFoods, CategoryItem } from "../../hooks/useFoods";
+import { useFoods, CategoryItem, CatalogMode } from "../../hooks/useFoods";
 import { router } from "expo-router";
 import { TEXTO } from "@/constants/msg";
 
-type AlimentoListItem = {
+type FoodListItem = {
   id: string;
   dbId: number;
   categoriaId: string;
@@ -31,7 +31,17 @@ type AlimentoListItem = {
   histamina: number;
 };
 
-type HomeListItem = AlimentoListItem | CategoryItem;
+type AdditiveListItem = {
+  id: string;
+  dbId: number;
+  categoriaId: string;
+  categoria: string;
+  nombre: string;
+  estado: string;
+  histamina: number;
+};
+
+type HomeListItem = FoodListItem | AdditiveListItem | CategoryItem;
 
 function isCategoryItem(item: HomeListItem): item is CategoryItem {
   return "cantidad" in item && "icon" in item;
@@ -42,6 +52,7 @@ function prettyLabel(texto: string) {
 }
 
 export default function HomeScreen() {
+  const [modo, setModo] = useState<CatalogMode>("alimentos");
   const [search, setSearch] = useState("");
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<
     string | null
@@ -49,7 +60,14 @@ export default function HomeScreen() {
   const [filtroHistamina, setFiltroHistamina] = useState<number | null>(null);
   const [ready, setReady] = useState(false);
 
-  const { foods, categories, loading, refresh } = useFoods();
+  const {
+    foods,
+    foodCategories,
+    additives,
+    additiveCategories,
+    loading,
+    refresh,
+  } = useFoods();
 
   useEffect(() => {
     (async () => {
@@ -60,12 +78,49 @@ export default function HomeScreen() {
     })();
   }, [refresh]);
 
-  const alimentosFiltrados = useMemo<AlimentoListItem[] | null>(() => {
-    let lista = foods.map((item) => ({
-      id: String(item.id),
+  const itemsFiltrados = useMemo<
+    FoodListItem[] | AdditiveListItem[] | null
+  >(() => {
+    if (modo === "alimentos") {
+      let lista: FoodListItem[] = foods.map((item) => ({
+        id: `food-${item.id}`,
+        dbId: item.id,
+        categoriaId: item.categoria_slug,
+        categoria: prettyLabel(item.categoria_slug),
+        nombre: item.nombre,
+        estado: prettyLabel(item.estado),
+        histamina: item.histamina,
+      }));
+
+      let hayFiltroActivo = false;
+
+      if (search) {
+        lista = lista.filter((a) =>
+          `${a.nombre} ${a.estado}`
+            .toLowerCase()
+            .includes(search.toLowerCase()),
+        );
+        hayFiltroActivo = true;
+      }
+
+      if (categoriaSeleccionada) {
+        lista = lista.filter((a) => a.categoriaId === categoriaSeleccionada);
+        hayFiltroActivo = true;
+      }
+
+      if (filtroHistamina !== null) {
+        lista = lista.filter((a) => a.histamina === filtroHistamina);
+        hayFiltroActivo = true;
+      }
+
+      return hayFiltroActivo ? lista : null;
+    }
+
+    let lista: AdditiveListItem[] = additives.map((item) => ({
+      id: `additive-${item.id}`,
       dbId: item.id,
-      categoriaId: item.categoria_slug,
-      categoria: prettyLabel(item.categoria_slug),
+      categoriaId: item.tipo,
+      categoria: prettyLabel(item.tipo),
       nombre: item.nombre,
       estado: prettyLabel(item.estado),
       histamina: item.histamina,
@@ -75,7 +130,9 @@ export default function HomeScreen() {
 
     if (search) {
       lista = lista.filter((a) =>
-        `${a.nombre} ${a.estado}`.toLowerCase().includes(search.toLowerCase()),
+        `${a.nombre} ${a.categoria} ${a.estado}`
+          .toLowerCase()
+          .includes(search.toLowerCase()),
       );
       hayFiltroActivo = true;
     }
@@ -91,7 +148,7 @@ export default function HomeScreen() {
     }
 
     return hayFiltroActivo ? lista : null;
-  }, [foods, search, categoriaSeleccionada, filtroHistamina]);
+  }, [modo, foods, additives, search, categoriaSeleccionada, filtroHistamina]);
 
   const volverAlIndice = () => {
     setCategoriaSeleccionada(null);
@@ -99,10 +156,15 @@ export default function HomeScreen() {
     setSearch("");
   };
 
+  const cambiarModo = (nuevoModo: CatalogMode) => {
+    setModo(nuevoModo);
+    volverAlIndice();
+  };
+
   const manejarResetDb = () => {
     Alert.alert(
       "Resetear base de datos",
-      "Se borrarán los cambios locales y se volverá a cargar el catálogo base. ¿Quieres continuar?",
+      "Se borrarán los cambios locales y se volverán a cargar alimentos y aditivos base. ¿Quieres continuar?",
       [
         { text: "Cancelar", style: "cancel" },
         {
@@ -118,7 +180,7 @@ export default function HomeScreen() {
               volverAlIndice();
               setReady(true);
               Alert.alert("Hecho", "La base de datos se ha restaurado.");
-            } catch (error) {
+            } catch {
               setReady(true);
               Alert.alert("Error", "No se pudo resetear la base de datos.");
             }
@@ -132,16 +194,17 @@ export default function HomeScreen() {
     return (
       <SafeAreaView style={styles.loaderContainer}>
         <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loaderText}>Cargando alimentos…</Text>
+        <Text style={styles.loaderText}>Cargando catálogo…</Text>
       </SafeAreaView>
     );
   }
 
-  const mostrandoCategorias = alimentosFiltrados === null && !search;
-
+  const categoriasActuales =
+    modo === "alimentos" ? foodCategories : additiveCategories;
+  const mostrandoCategorias = itemsFiltrados === null && !search;
   const dataToRender: HomeListItem[] = mostrandoCategorias
-    ? categories
-    : (alimentosFiltrados ?? []);
+    ? categoriasActuales
+    : (itemsFiltrados ?? []);
 
   const renderItem: ListRenderItem<HomeListItem> = ({ item }) => {
     if (mostrandoCategorias && isCategoryItem(item)) {
@@ -187,24 +250,68 @@ export default function HomeScreen() {
                     ? "Resultados"
                     : categoriaSeleccionada
                       ? prettyLabel(categoriaSeleccionada)
-                      : "Mi Compra"}
+                      : modo === "alimentos"
+                        ? "Alimentos"
+                        : "Aditivos"}
                 </Text>
               </View>
 
               {!search && !categoriaSeleccionada && (
-                <Text style={styles.infoSubtitle}>{TEXTO}</Text>
+                <Text style={styles.infoSubtitle}>
+                  Filtra por nivel y cambia entre alimentos y aditivos sin salir
+                  de la pantalla principal.
+                  {TEXTO}
+                </Text>
               )}
+            </View>
+
+            <View style={styles.modeSwitch}>
+              <TouchableOpacity
+                style={[
+                  styles.modeButton,
+                  modo === "alimentos" && styles.modeButtonActive,
+                ]}
+                onPress={() => cambiarModo("alimentos")}
+              >
+                <Text
+                  style={[
+                    styles.modeButtonText,
+                    modo === "alimentos" && styles.modeButtonTextActive,
+                  ]}
+                >
+                  Alimentos
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.modeButton,
+                  modo === "aditivos" && styles.modeButtonActive,
+                ]}
+                onPress={() => cambiarModo("aditivos")}
+              >
+                <Text
+                  style={[
+                    styles.modeButtonText,
+                    modo === "aditivos" && styles.modeButtonTextActive,
+                  ]}
+                >
+                  Aditivos
+                </Text>
+              </TouchableOpacity>
             </View>
 
             <SearchBar value={search} onChangeText={setSearch} />
 
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={() => router.push("/nuevo-alimento")}
-            >
-              <Ionicons name="add-circle-outline" size={20} color="#FFF" />
-              <Text style={styles.addButtonText}>Añadir alimento</Text>
-            </TouchableOpacity>
+            {modo === "alimentos" && (
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => router.push("/nuevo-alimento")}
+              >
+                <Ionicons name="add-circle-outline" size={20} color="#FFF" />
+                <Text style={styles.addButtonText}>Añadir alimento</Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
               style={styles.resetButton}
@@ -247,7 +354,7 @@ export default function HomeScreen() {
         }
         ListEmptyComponent={
           <Text style={styles.emptyText}>
-            No se encontraron alimentos con estos filtros.
+            No se encontraron elementos con estos filtros.
           </Text>
         }
         contentContainerStyle={styles.listContainer}
@@ -307,6 +414,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     lineHeight: 20,
     marginBottom: 10,
+  },
+
+  modeSwitch: {
+    flexDirection: "row",
+    backgroundColor: "#E9E9ED",
+    marginHorizontal: 20,
+    marginBottom: 14,
+    borderRadius: 12,
+    padding: 4,
+  },
+
+  modeButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+
+  modeButtonActive: {
+    backgroundColor: "#FFFFFF",
+  },
+
+  modeButtonText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#6B7280",
+  },
+
+  modeButtonTextActive: {
+    color: "#1C1C1E",
   },
 
   listContainer: {

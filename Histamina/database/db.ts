@@ -26,11 +26,26 @@ export async function initDb() {
       categoria_slug TEXT NOT NULL,
       clave TEXT NOT NULL,
       nombre TEXT NOT NULL,
-      estado TEXT NOT NULL DEFAULT 'normal',
+      estado TEXT NOT NULL DEFAULT 'fresco',
       histamina INTEGER NOT NULL CHECK (histamina IN (0,1,2,3)),
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(categoria_slug, clave, estado)
+    );
+
+    CREATE TABLE IF NOT EXISTS aditivos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      categoria_slug TEXT NOT NULL DEFAULT 'aditivos',
+      clave TEXT NOT NULL UNIQUE,
+      nombre TEXT NOT NULL,
+      tipo TEXT NOT NULL,
+      estado TEXT NOT NULL DEFAULT 'procesado',
+      histamina INTEGER NOT NULL CHECK (histamina IN (0,1,2,3)),
+      confianza TEXT,
+      notas TEXT,
+      alias_json TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS app_meta (
@@ -45,6 +60,7 @@ export async function resetDatabase() {
 
   await db.withTransactionAsync(async () => {
     await db.runAsync(`DELETE FROM alimentos`);
+    await db.runAsync(`DELETE FROM aditivos`);
     await db.runAsync(`DELETE FROM categorias`);
     await db.runAsync(`DELETE FROM app_meta`);
   });

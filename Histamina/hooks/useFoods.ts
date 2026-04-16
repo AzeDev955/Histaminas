@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { getDb } from "../database/db";
 
+export type CatalogMode = "alimentos" | "aditivos";
+
 export interface FoodItem {
   id: number;
   categoria_slug: string;
@@ -8,6 +10,19 @@ export interface FoodItem {
   nombre: string;
   estado: string;
   histamina: number;
+}
+
+export interface AdditiveItem {
+  id: number;
+  categoria_slug: string;
+  clave: string;
+  nombre: string;
+  tipo: string;
+  estado: string;
+  histamina: number;
+  confianza?: string | null;
+  notas?: string | null;
+  alias_json?: string | null;
 }
 
 type IoniconName =
@@ -18,7 +33,8 @@ type IoniconName =
   | "boat"
   | "beer"
   | "flame"
-  | "restaurant";
+  | "restaurant"
+  | "flask";
 
 export interface CategoryItem {
   id: string;
@@ -27,7 +43,7 @@ export interface CategoryItem {
   icon: IoniconName;
 }
 
-function getCategoryIcon(key: string): IoniconName {
+function getFoodCategoryIcon(key: string): IoniconName {
   switch (key) {
     case "verduras":
       return "leaf";
@@ -43,23 +59,37 @@ function getCategoryIcon(key: string): IoniconName {
       return "beer";
     case "especias":
       return "flame";
-    case "cereales":
-    case "dulces":
-    case "grasas":
-    case "carnes":
-    case "legumbres":
     default:
       return "restaurant";
   }
 }
 
-function prettyCategoryName(slug: string) {
+function getAdditiveTypeIcon(key: string): IoniconName {
+  switch (key) {
+    case "conservante":
+      return "flask";
+    case "antioxidante":
+      return "flask";
+    case "potenciador":
+      return "flask";
+    case "secuestrante":
+      return "flask";
+    default:
+      return "flask";
+  }
+}
+
+function prettyLabel(slug: string) {
   return slug.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 }
 
 export function useFoods() {
   const [foods, setFoods] = useState<FoodItem[]>([]);
-  const [categories, setCategories] = useState<CategoryItem[]>([]);
+  const [foodCategories, setFoodCategories] = useState<CategoryItem[]>([]);
+  const [additives, setAdditives] = useState<AdditiveItem[]>([]);
+  const [additiveCategories, setAdditiveCategories] = useState<CategoryItem[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
@@ -71,7 +101,7 @@ export function useFoods() {
        ORDER BY nombre COLLATE NOCASE ASC, estado COLLATE NOCASE ASC`,
     );
 
-    const categoriasRaw = await db.getAllAsync<{
+    const categoriasAlimentos = await db.getAllAsync<{
       categoria_slug: string;
       cantidad: number;
     }>(
@@ -81,14 +111,39 @@ export function useFoods() {
        ORDER BY categoria_slug ASC`,
     );
 
-    setFoods(alimentos);
+    const aditivos = await db.getAllAsync<AdditiveItem>(
+      `SELECT id, categoria_slug, clave, nombre, tipo, estado, histamina, confianza, notas, alias_json
+       FROM aditivos
+       ORDER BY nombre COLLATE NOCASE ASC`,
+    );
 
-    setCategories(
-      categoriasRaw.map((c) => ({
+    const categoriasAditivos = await db.getAllAsync<{
+      tipo: string;
+      cantidad: number;
+    }>(
+      `SELECT tipo, COUNT(*) as cantidad
+       FROM aditivos
+       GROUP BY tipo
+       ORDER BY tipo ASC`,
+    );
+
+    setFoods(alimentos);
+    setFoodCategories(
+      categoriasAlimentos.map((c) => ({
         id: c.categoria_slug,
-        nombre: prettyCategoryName(c.categoria_slug),
+        nombre: prettyLabel(c.categoria_slug),
         cantidad: c.cantidad,
-        icon: getCategoryIcon(c.categoria_slug),
+        icon: getFoodCategoryIcon(c.categoria_slug),
+      })),
+    );
+
+    setAdditives(aditivos);
+    setAdditiveCategories(
+      categoriasAditivos.map((c) => ({
+        id: c.tipo,
+        nombre: prettyLabel(c.tipo),
+        cantidad: c.cantidad,
+        icon: getAdditiveTypeIcon(c.tipo),
       })),
     );
 
@@ -99,5 +154,12 @@ export function useFoods() {
     refresh();
   }, [refresh]);
 
-  return { foods, categories, loading, refresh };
+  return {
+    foods,
+    foodCategories,
+    additives,
+    additiveCategories,
+    loading,
+    refresh,
+  };
 }
