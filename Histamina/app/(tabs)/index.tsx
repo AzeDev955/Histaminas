@@ -20,6 +20,8 @@ import { seedDatabaseIfNeeded } from "../../database/seed";
 import { useFoods, CategoryItem, CatalogMode } from "../../hooks/useFoods";
 import { router } from "expo-router";
 import { TEXTO } from "@/constants/msg";
+import { useFocusEffect } from "expo-router";
+import { useCallback } from "react";
 
 type FoodListItem = {
   id: string;
@@ -71,6 +73,12 @@ export default function HomeScreen() {
     loading,
     refresh,
   } = useFoods();
+
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh]),
+  );
 
   const FORCE_RESET_ON_BOOT = false;
 

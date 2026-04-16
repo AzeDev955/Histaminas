@@ -14,10 +14,9 @@ export async function getFoodById(id: number) {
   const db = await getDb();
 
   return db.getFirstAsync<FoodRow>(
-    `SELECT id, categoria_slug, clave, nombre, estado, histamina
-     FROM alimentos
-     WHERE id = ?`,
-    [id],
+    `SELECT id, categoria_slug, clave, nombre, estado, histamina, notas
+ FROM alimentos
+ WHERE id = ?`,
   );
 }
 

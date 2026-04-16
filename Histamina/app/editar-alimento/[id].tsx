@@ -59,6 +59,15 @@ export default function EditarAlimentoScreen() {
   const guardar = async () => {
     if (!foodId) return;
 
+    console.log("GUARDANDO ALIMENTO", {
+      foodId,
+      nombre,
+      categoriaSlug,
+      estado,
+      histamina,
+      notas,
+    });
+
     if (!nombre.trim()) {
       Alert.alert("Falta el nombre", "Escribe un nombre para el alimento.");
       return;
@@ -131,6 +140,8 @@ export default function EditarAlimentoScreen() {
           setEstado={setEstado}
           histamina={histamina}
           setHistamina={setHistamina}
+          notas={notas}
+          setNotas={setNotas}
           categoriasDisponibles={categorias}
           onSubmit={guardar}
           submitLabel="Guardar cambios"
