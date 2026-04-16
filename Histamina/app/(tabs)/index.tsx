@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  ListRenderItem,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ItemCard from "@/components/Itemcard";
@@ -16,8 +17,23 @@ import { Ionicons } from "@expo/vector-icons";
 import { getHistaminaConfig } from "../../utils/helpers";
 import { initDb, resetDatabase } from "../../database/db";
 import { seedDatabaseIfNeeded } from "../../database/seed";
-import { useFoods } from "../../hooks/useFoods";
+import { useFoods, CategoryItem } from "../../hooks/useFoods";
 import { router } from "expo-router";
+
+type AlimentoListItem = {
+  id: string;
+  dbId: number;
+  categoriaId: string;
+  categoria: string;
+  nombre: string;
+  histamina: number;
+};
+
+type HomeListItem = AlimentoListItem | CategoryItem;
+
+function isCategoryItem(item: HomeListItem): item is CategoryItem {
+  return "cantidad" in item && "icon" in item;
+}
 
 export default function HomeScreen() {
   const [search, setSearch] = useState("");
@@ -38,7 +54,7 @@ export default function HomeScreen() {
     })();
   }, [refresh]);
 
-  const alimentosFiltrados = useMemo(() => {
+  const alimentosFiltrados = useMemo<AlimentoListItem[] | null>(() => {
     let lista = foods.map((item) => ({
       id: String(item.id),
       dbId: item.id,
@@ -119,125 +135,153 @@ export default function HomeScreen() {
     );
   }
 
+  const mostrandoCategorias = alimentosFiltrados === null && !search;
+
+  const dataToRender: HomeListItem[] = mostrandoCategorias
+    ? categories
+    : (alimentosFiltrados ?? []);
+
+  const renderItem: ListRenderItem<HomeListItem> = ({ item }) => {
+    if (mostrandoCategorias && isCategoryItem(item)) {
+      return (
+        <CategoryCard
+          nombre={item.nombre}
+          cantidad={item.cantidad}
+          icon={item.icon}
+          onPress={() => setCategoriaSeleccionada(item.id)}
+        />
+      );
+    }
+
+    if (!mostrandoCategorias && !isCategoryItem(item)) {
+      return <ItemCard item={item} />;
+    }
+
+    return null;
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.headerContainer}>
-        <View style={styles.header}>
-          {(categoriaSeleccionada || filtroHistamina !== null) && !search && (
+      <FlatList<HomeListItem>
+        data={dataToRender}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        ListHeaderComponent={
+          <>
+            <View style={styles.headerContainer}>
+              <View style={styles.header}>
+                {(categoriaSeleccionada || filtroHistamina !== null) &&
+                  !search && (
+                    <TouchableOpacity
+                      onPress={volverAlIndice}
+                      style={styles.backButton}
+                    >
+                      <Ionicons name="arrow-back" size={24} color="#007AFF" />
+                    </TouchableOpacity>
+                  )}
+
+                <Text style={styles.headerTitle}>
+                  {search
+                    ? "Resultados"
+                    : categoriaSeleccionada
+                      ? categoriaSeleccionada
+                          .replace(/_/g, " ")
+                          .replace(/\b\w/g, (l) => l.toUpperCase())
+                      : "Mi Compra"}
+                </Text>
+              </View>
+
+              {!search && !categoriaSeleccionada && (
+                <Text style={styles.infoSubtitle}>
+                  Puedes comer cualquier cosa del nivel 0 y 1. El nivel 2 hay
+                  que probar tolerancia y deberíamos evitar el nivel 3. Te amo,
+                  siempre
+                </Text>
+              )}
+            </View>
+
+            <SearchBar value={search} onChangeText={setSearch} />
+
             <TouchableOpacity
-              onPress={volverAlIndice}
-              style={styles.backButton}
+              style={styles.addButton}
+              onPress={() => router.push("/nuevo-alimento")}
             >
-              <Ionicons name="arrow-back" size={24} color="#007AFF" />
+              <Ionicons name="add-circle-outline" size={20} color="#FFF" />
+              <Text style={styles.addButtonText}>Añadir alimento</Text>
             </TouchableOpacity>
-          )}
-          <Text style={styles.headerTitle}>
-            {search
-              ? "Resultados"
-              : categoriaSeleccionada
-                ? categoriaSeleccionada.toUpperCase()
-                : "Mi Compra"}
-          </Text>
-        </View>
 
-        {!search && !categoriaSeleccionada && (
-          <Text style={styles.infoSubtitle}>
-            Puedes comer cualquier cosa del nivel 0 y 1. El nivel 2 hay que
-            probar tolerancia y deberíamos evitar el nivel 3. Te amo, siempre
-          </Text>
-        )}
-      </View>
-
-      <SearchBar value={search} onChangeText={setSearch} />
-
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => router.push("/nuevo-alimento")}
-      >
-        <Ionicons name="add-circle-outline" size={20} color="#FFF" />
-        <Text style={styles.addButtonText}>Añadir alimento</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.resetButton} onPress={manejarResetDb}>
-        <Ionicons name="refresh-outline" size={20} color="#FFF" />
-        <Text style={styles.resetButtonText}>Resetear base de datos</Text>
-      </TouchableOpacity>
-
-      <View style={styles.histaminaFilterContainer}>
-        {[0, 1, 2, 3].map((nivel) => {
-          const config = getHistaminaConfig(nivel);
-          const isSelected = filtroHistamina === nivel;
-
-          return (
             <TouchableOpacity
-              key={nivel}
-              style={[
-                styles.histaminaButton,
-                { borderColor: config.color },
-                isSelected && { backgroundColor: config.color },
-              ]}
-              onPress={() => setFiltroHistamina(isSelected ? null : nivel)}
+              style={styles.resetButton}
+              onPress={manejarResetDb}
             >
-              <Text
-                style={[
-                  styles.histaminaButtonText,
-                  { color: isSelected ? "#FFF" : config.color },
-                ]}
-              >
-                Nivel {nivel}
-              </Text>
+              <Ionicons name="refresh-outline" size={20} color="#FFF" />
+              <Text style={styles.resetButtonText}>Resetear base de datos</Text>
             </TouchableOpacity>
-          );
-        })}
-      </View>
 
-      {alimentosFiltrados === null && !search ? (
-        <FlatList
-          data={categories}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <CategoryCard
-              nombre={item.nombre}
-              cantidad={item.cantidad}
-              icon={item.icon}
-              onPress={() => setCategoriaSeleccionada(item.id)}
-            />
-          )}
-          contentContainerStyle={styles.listContainer}
-          showsVerticalScrollIndicator={false}
-        />
-      ) : (
-        <FlatList
-          data={alimentosFiltrados ?? []}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <ItemCard item={item} />}
-          contentContainerStyle={styles.listContainer}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>
-              No se encontraron alimentos con estos filtros.
-            </Text>
-          }
-          showsVerticalScrollIndicator={false}
-        />
-      )}
+            <View style={styles.histaminaFilterContainer}>
+              {[0, 1, 2, 3].map((nivel) => {
+                const config = getHistaminaConfig(nivel);
+                const isSelected = filtroHistamina === nivel;
+
+                return (
+                  <TouchableOpacity
+                    key={nivel}
+                    style={[
+                      styles.histaminaButton,
+                      { borderColor: config.color },
+                      isSelected && { backgroundColor: config.color },
+                    ]}
+                    onPress={() =>
+                      setFiltroHistamina(isSelected ? null : nivel)
+                    }
+                  >
+                    <Text
+                      style={[
+                        styles.histaminaButtonText,
+                        { color: isSelected ? "#FFF" : config.color },
+                      ]}
+                    >
+                      Nivel {nivel}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </>
+        }
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>
+            No se encontraron alimentos con estos filtros.
+          </Text>
+        }
+        contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={false}
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F5F5F7" },
+
   loaderContainer: {
     flex: 1,
     backgroundColor: "#F5F5F7",
     justifyContent: "center",
     alignItems: "center",
   },
+
   loaderText: {
     marginTop: 12,
     color: "#6B7280",
     fontSize: 15,
   },
-  headerContainer: { marginBottom: 5 },
+
+  headerContainer: {
+    marginBottom: 5,
+    paddingTop: 10,
+  },
+
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -245,8 +289,21 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     position: "relative",
   },
-  backButton: { position: "absolute", left: 20, zIndex: 10 },
-  headerTitle: { fontSize: 26, fontWeight: "800", color: "#1C1C1E" },
+
+  backButton: {
+    position: "absolute",
+    left: 20,
+    zIndex: 10,
+  },
+
+  headerTitle: {
+    fontSize: 26,
+    fontWeight: "800",
+    color: "#1C1C1E",
+    textAlign: "center",
+    paddingHorizontal: 48,
+  },
+
   infoSubtitle: {
     fontSize: 14,
     color: "#8E8E93",
@@ -255,34 +312,15 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: 10,
   },
-  listContainer: { paddingHorizontal: 20, paddingBottom: 20 },
-  histaminaFilterContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 8,
-    marginHorizontal: 20,
-    marginBottom: 16,
-    flexWrap: "wrap",
+
+  listContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 40,
   },
-  histaminaButton: {
-    borderWidth: 1.5,
-    borderRadius: 999,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-  },
-  histaminaButtonText: {
-    fontWeight: "700",
-    fontSize: 14,
-  },
-  emptyText: {
-    textAlign: "center",
-    color: "#8E8E93",
-    fontSize: 15,
-    marginTop: 30,
-  },
+
   addButton: {
     marginHorizontal: 20,
-    marginBottom: 16,
+    marginBottom: 12,
     backgroundColor: "#007AFF",
     borderRadius: 14,
     paddingVertical: 14,
@@ -291,11 +329,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
   },
+
   addButtonText: {
     color: "#FFF",
     fontSize: 16,
     fontWeight: "800",
   },
+
   resetButton: {
     marginHorizontal: 20,
     marginBottom: 16,
@@ -307,9 +347,38 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
   },
+
   resetButtonText: {
     color: "#FFF",
     fontSize: 16,
     fontWeight: "800",
+  },
+
+  histaminaFilterContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+    marginHorizontal: 20,
+    marginBottom: 16,
+    flexWrap: "wrap",
+  },
+
+  histaminaButton: {
+    borderWidth: 1.5,
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+
+  histaminaButtonText: {
+    fontWeight: "700",
+    fontSize: 14,
+  },
+
+  emptyText: {
+    textAlign: "center",
+    color: "#8E8E93",
+    fontSize: 15,
+    marginTop: 30,
   },
 });

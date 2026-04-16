@@ -9,35 +9,49 @@ export interface FoodItem {
   histamina: number;
 }
 
+type IoniconName =
+  | "leaf"
+  | "nutrition"
+  | "water"
+  | "egg"
+  | "boat"
+  | "beer"
+  | "flame"
+  | "restaurant";
+
 export interface CategoryItem {
   id: string;
   nombre: string;
   cantidad: number;
-  icon: string;
+  icon: IoniconName;
 }
 
-function getCategoryIcon(key: string) {
+function getCategoryIcon(key: string): IoniconName {
   switch (key) {
     case "verduras":
-    case "verduras_y_hortalizas":
-    case "verduras_y_setas":
       return "leaf";
     case "frutas":
-    case "frutas_seguras":
       return "nutrition";
     case "lacteos":
-    case "lacteos_y_huevos":
       return "water";
-    case "carnes":
+    case "huevos":
       return "egg";
-    case "pescados_y_mariscos":
-    case "pescados y mariscos":
+    case "pescados":
       return "boat";
     case "bebidas":
       return "beer";
-    case "especias_y_condimentos":
-    case "especias y condimentos":
+    case "especias":
       return "flame";
+    case "cereales":
+      return "restaurant";
+    case "dulces":
+      return "restaurant";
+    case "grasas":
+      return "restaurant";
+    case "carnes":
+      return "restaurant";
+    case "legumbres":
+      return "restaurant";
     default:
       return "restaurant";
   }
