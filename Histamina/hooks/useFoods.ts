@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { getDb } from "../database/db";
+import type { ComponentProps } from "react";
+import { Ionicons } from "@expo/vector-icons";
 
 export type CatalogMode = "alimentos" | "aditivos";
 
@@ -25,16 +27,7 @@ export interface AdditiveItem {
   alias_json?: string | null;
 }
 
-type IoniconName =
-  | "leaf"
-  | "nutrition"
-  | "water"
-  | "egg"
-  | "boat"
-  | "beer"
-  | "flame"
-  | "restaurant"
-  | "flask";
+type IoniconName = ComponentProps<typeof Ionicons>["name"];
 
 export interface CategoryItem {
   id: string;
@@ -67,15 +60,15 @@ function getFoodCategoryIcon(key: string): IoniconName {
 function getAdditiveTypeIcon(key: string): IoniconName {
   switch (key) {
     case "conservante":
-      return "flask";
+      return "flask-outline";
     case "antioxidante":
-      return "flask";
+      return "flask-outline";
     case "potenciador":
-      return "flask";
+      return "flask-outline";
     case "secuestrante":
-      return "flask";
+      return "flask-outline";
     default:
-      return "flask";
+      return "flask-outline";
   }
 }
 

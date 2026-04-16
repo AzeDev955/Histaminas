@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { getHistaminaConfig } from "../utils/helpers";
+import { ESTADOS_VALIDOS } from "../constants/estados";
 
 interface FoodFormProps {
   nombre: string;
@@ -19,28 +20,13 @@ interface FoodFormProps {
   setEstado: (value: string) => void;
   histamina: number;
   setHistamina: (value: number) => void;
+  notas: string;
+  setNotas: (value: string) => void;
   categoriasDisponibles: string[];
   onSubmit: () => void;
   submitLabel: string;
   showClave?: boolean;
 }
-
-const ESTADOS_DISPONIBLES = [
-  "normal",
-  "fresco",
-  "congelado",
-  "enlatado",
-  "fermentado",
-  "ahumado",
-  "curado",
-  "madurado",
-  "seco",
-  "cocido",
-  "pasteurizado",
-  "uht",
-  "encurtido",
-  "marinado",
-];
 
 function prettyLabel(texto: string) {
   return texto.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
@@ -57,6 +43,8 @@ export default function FoodForm({
   setEstado,
   histamina,
   setHistamina,
+  notas,
+  setNotas,
   categoriasDisponibles,
   onSubmit,
   submitLabel,
@@ -108,7 +96,7 @@ export default function FoodForm({
 
       <Text style={styles.label}>Estado</Text>
       <View style={styles.wrap}>
-        {ESTADOS_DISPONIBLES.map((itemEstado) => {
+        {ESTADOS_VALIDOS.map((itemEstado) => {
           const active = itemEstado === estado;
 
           return (
@@ -125,17 +113,17 @@ export default function FoodForm({
         })}
       </View>
 
-      <Text style={styles.label}>Nivel de histamina</Text>
-      <View style={styles.wrap}>
+      <Text style={styles.label}>Nivel</Text>
+      <View style={styles.histaminaRow}>
         {[0, 1, 2, 3].map((nivel) => {
           const config = getHistaminaConfig(nivel);
-          const active = nivel === histamina;
+          const active = histamina === nivel;
 
           return (
             <TouchableOpacity
               key={nivel}
               style={[
-                styles.levelButton,
+                styles.histaminaButton,
                 { borderColor: config.color },
                 active && { backgroundColor: config.color },
               ]}
@@ -143,16 +131,28 @@ export default function FoodForm({
             >
               <Text
                 style={[
-                  styles.levelButtonText,
+                  styles.histaminaButtonText,
                   { color: active ? "#FFF" : config.color },
                 ]}
               >
-                Nivel {nivel}
+                {nivel}
               </Text>
             </TouchableOpacity>
           );
         })}
       </View>
+
+      <Text style={styles.label}>Notas</Text>
+      <TextInput
+        style={[styles.input, styles.textarea]}
+        value={notas}
+        onChangeText={setNotas}
+        placeholder="Notas opcionales sobre tolerancia, preparación o contexto"
+        placeholderTextColor="#8E8E93"
+        multiline
+        numberOfLines={4}
+        textAlignVertical="top"
+      />
 
       <TouchableOpacity style={styles.submitButton} onPress={onSubmit}>
         <Text style={styles.submitButtonText}>{submitLabel}</Text>
@@ -163,27 +163,36 @@ export default function FoodForm({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
-    paddingBottom: 30,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 18,
+    marginHorizontal: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
 
   label: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#1C1C1E",
+    color: "#374151",
     marginBottom: 8,
-    marginTop: 16,
+    marginTop: 10,
   },
 
   input: {
-    backgroundColor: "#FFF",
-    borderRadius: 12,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 14,
-    fontSize: 16,
-    color: "#1C1C1E",
-    borderWidth: 1,
-    borderColor: "#E5E5EA",
+    fontSize: 15,
+    color: "#111827",
+  },
+
+  textarea: {
+    minHeight: 100,
   },
 
   wrap: {
@@ -193,41 +202,48 @@ const styles = StyleSheet.create({
   },
 
   chip: {
-    backgroundColor: "#FFF",
-    borderWidth: 1,
-    borderColor: "#D1D1D6",
-    borderRadius: 999,
+    backgroundColor: "#EEF2F7",
+    paddingHorizontal: 12,
     paddingVertical: 10,
-    paddingHorizontal: 14,
+    borderRadius: 999,
   },
 
   chipActive: {
     backgroundColor: "#007AFF",
-    borderColor: "#007AFF",
   },
 
   chipText: {
-    color: "#1C1C1E",
+    fontSize: 14,
     fontWeight: "600",
+    color: "#374151",
   },
 
   chipTextActive: {
-    color: "#FFF",
+    color: "#FFFFFF",
   },
 
-  levelButton: {
+  histaminaRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 2,
+    marginBottom: 4,
+  },
+
+  histaminaButton: {
+    flex: 1,
     borderWidth: 1.5,
-    borderRadius: 999,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: "center",
   },
 
-  levelButtonText: {
-    fontWeight: "700",
+  histaminaButtonText: {
+    fontSize: 15,
+    fontWeight: "800",
   },
 
   submitButton: {
-    marginTop: 28,
+    marginTop: 20,
     backgroundColor: "#007AFF",
     borderRadius: 14,
     paddingVertical: 15,

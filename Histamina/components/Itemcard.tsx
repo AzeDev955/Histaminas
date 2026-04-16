@@ -4,23 +4,35 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { getHistaminaConfig } from "../utils/helpers";
 
-interface Alimento {
+interface BaseItem {
   id: string;
   dbId?: number;
   nombre: string;
   categoria: string;
+  estado: string;
   histamina: number;
+  tipo?: string;
 }
 
 interface Props {
-  item: Alimento;
+  item: BaseItem;
+  modo: "alimentos" | "aditivos";
 }
 
-export default function ItemCard({ item }: Props) {
+export default function ItemCard({ item, modo }: Props) {
   const config = getHistaminaConfig(item.histamina);
+  const accentColor = modo === "aditivos" ? "#5856D6" : config.color;
 
   const onPress = () => {
     if (!item.dbId) return;
+
+    if (modo === "aditivos") {
+      router.push({
+        pathname: "/editar-aditivo/[id]",
+        params: { id: String(item.dbId) },
+      });
+      return;
+    }
 
     router.push({
       pathname: "/editar-alimento/[id]",
@@ -33,14 +45,17 @@ export default function ItemCard({ item }: Props) {
       activeOpacity={0.75}
       onPress={onPress}
       disabled={!item.dbId}
-      style={[styles.card, { borderLeftColor: config.color }]}
+      style={[styles.card, { borderLeftColor: accentColor }]}
     >
       <View style={styles.info}>
         <Text style={styles.nombre} numberOfLines={2}>
           {item.nombre}
         </Text>
+
         <Text style={styles.categoria} numberOfLines={1}>
-          {item.categoria}
+          {modo === "aditivos" && item.tipo
+            ? `${item.tipo} · ${item.estado}`
+            : `${item.categoria} · ${item.estado}`}
         </Text>
       </View>
 

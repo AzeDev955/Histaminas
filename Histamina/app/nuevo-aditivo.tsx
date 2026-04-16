@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import FoodForm from "../components/FoodForm";
-import { addFood, getCategorySlugs } from "../database/foods";
+import AdditiveForm from "../components/AdditiveForm";
+import { createAditivo, getTiposAditivo } from "../database/aditivos";
 
 function slugify(texto: string) {
   return texto
@@ -15,60 +15,61 @@ function slugify(texto: string) {
     .replace(/\s+/g, "_");
 }
 
-export default function NuevoAlimentoScreen() {
+export default function NuevoAditivoScreen() {
   const [nombre, setNombre] = useState("");
-  const [clave, setClave] = useState("");
-  const [categoriaSlug, setCategoriaSlug] = useState("");
-  const [estado, setEstado] = useState("fresco");
+  const [tipo, setTipo] = useState("");
+  const [estado, setEstado] = useState("procesado");
   const [histamina, setHistamina] = useState(0);
-  const [categorias, setCategorias] = useState<string[]>([]);
   const [notas, setNotas] = useState("");
+  const [tipos, setTipos] = useState<string[]>([]);
 
   useEffect(() => {
     (async () => {
-      const rows = await getCategorySlugs();
-      const slugs = rows.map((r) => r.categoria_slug);
-      setCategorias(slugs);
+      const rows = await getTiposAditivo();
+      const valores = rows.map((r) => r.tipo);
+      setTipos(valores);
 
-      if (slugs.length > 0) {
-        setCategoriaSlug(slugs[0]);
+      if (valores.length > 0) {
+        setTipo(valores[0]);
+      } else {
+        setTipo("conservante");
       }
     })();
   }, []);
 
   const guardar = async () => {
     if (!nombre.trim()) {
-      Alert.alert("Falta el nombre", "Escribe un nombre para el alimento.");
+      Alert.alert("Falta el nombre", "Escribe un nombre para el aditivo.");
       return;
     }
 
-    if (!categoriaSlug) {
-      Alert.alert("Falta la categoría", "Selecciona una categoría.");
+    if (!tipo.trim()) {
+      Alert.alert("Falta el tipo", "Selecciona un tipo.");
       return;
     }
 
-    const finalClave = clave.trim() || slugify(nombre);
+    const clave = slugify(nombre);
 
     try {
-      await addFood({
+      await createAditivo({
+        clave,
         nombre: nombre.trim(),
-        clave: finalClave,
-        categoriaSlug,
+        tipo,
         estado,
         histamina,
         notas,
       });
 
-      Alert.alert("Guardado", "El alimento se ha añadido correctamente.", [
+      Alert.alert("Guardado", "El aditivo se ha añadido correctamente.", [
         {
           text: "OK",
           onPress: () => router.back(),
         },
       ]);
-    } catch (error) {
+    } catch {
       Alert.alert(
         "No se pudo guardar",
-        "Puede que ya exista este alimento con el mismo estado dentro de la categoría.",
+        "Puede que ya exista un aditivo con esa clave o haya un dato inválido.",
       );
     }
   };
@@ -76,28 +77,25 @@ export default function NuevoAlimentoScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.title}>Nuevo alimento</Text>
+        <Text style={styles.title}>Nuevo aditivo</Text>
         <Text style={styles.subtitle}>
-          Añade un alimento nuevo a tu base local.
+          Añade un aditivo nuevo a tu base local.
         </Text>
 
-        <FoodForm
+        <AdditiveForm
           nombre={nombre}
           setNombre={setNombre}
-          categoriaSlug={categoriaSlug}
-          setCategoriaSlug={setCategoriaSlug}
-          clave={clave}
-          setClave={setClave}
+          tipo={tipo}
+          setTipo={setTipo}
           estado={estado}
           setEstado={setEstado}
           histamina={histamina}
           setHistamina={setHistamina}
-          categoriasDisponibles={categorias}
-          onSubmit={guardar}
-          submitLabel="Guardar alimento"
-          showClave
           notas={notas}
           setNotas={setNotas}
+          tiposDisponibles={tipos}
+          onSubmit={guardar}
+          submitLabel="Guardar aditivo"
         />
       </ScrollView>
     </SafeAreaView>

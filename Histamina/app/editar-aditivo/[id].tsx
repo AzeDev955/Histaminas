@@ -8,48 +8,46 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
-import FoodForm from "../../components/FoodForm";
+import AdditiveForm from "../../components/AdditiveForm";
 import {
-  deleteFood,
-  getCategorySlugs,
-  getFoodById,
-  updateFood,
-} from "../../database/foods";
+  deleteAditivo,
+  getAditivoById,
+  getTiposAditivo,
+  updateAditivo,
+} from "../../database/aditivos";
 
-export default function EditarAlimentoScreen() {
+export default function EditarAditivoScreen() {
   const params = useLocalSearchParams<{ id: string }>();
 
-  const [foodId, setFoodId] = useState<number | null>(null);
+  const [aditivoId, setAditivoId] = useState<number | null>(null);
   const [nombre, setNombre] = useState("");
-  const [clave, setClave] = useState("");
-  const [categoriaSlug, setCategoriaSlug] = useState("");
-  const [estado, setEstado] = useState("fresco");
+  const [tipo, setTipo] = useState("");
+  const [estado, setEstado] = useState("procesado");
   const [histamina, setHistamina] = useState(0);
-  const [categorias, setCategorias] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
   const [notas, setNotas] = useState("");
+  const [tipos, setTipos] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       const id = Number(params.id);
       if (!id) return;
 
-      const [food, categoryRows] = await Promise.all([
-        getFoodById(id),
-        getCategorySlugs(),
+      const [aditivo, tiposRows] = await Promise.all([
+        getAditivoById(id),
+        getTiposAditivo(),
       ]);
 
-      const slugs = categoryRows.map((r) => r.categoria_slug);
-      setCategorias(slugs);
+      const tiposDisponibles = tiposRows.map((r) => r.tipo);
+      setTipos(tiposDisponibles);
 
-      if (food) {
-        setFoodId(food.id);
-        setNombre(food.nombre);
-        setClave(food.clave);
-        setCategoriaSlug(food.categoria_slug);
-        setEstado(food.estado);
-        setHistamina(food.histamina);
-        setNotas(food.notas ?? "");
+      if (aditivo) {
+        setAditivoId(aditivo.id);
+        setNombre(aditivo.nombre);
+        setTipo(aditivo.tipo);
+        setEstado(aditivo.estado);
+        setHistamina(aditivo.histamina);
+        setNotas(aditivo.notas ?? "");
       }
 
       setLoading(false);
@@ -57,39 +55,39 @@ export default function EditarAlimentoScreen() {
   }, [params.id]);
 
   const guardar = async () => {
-    if (!foodId) return;
+    if (!aditivoId) return;
 
     if (!nombre.trim()) {
-      Alert.alert("Falta el nombre", "Escribe un nombre para el alimento.");
+      Alert.alert("Falta el nombre", "Escribe un nombre para el aditivo.");
       return;
     }
 
     try {
-      await updateFood({
-        id: foodId,
+      await updateAditivo({
+        id: aditivoId,
         nombre: nombre.trim(),
-        categoriaSlug,
+        tipo,
         estado,
         histamina,
         notas,
       });
 
-      Alert.alert("Cambios guardados", "El alimento se ha actualizado.", [
+      Alert.alert("Cambios guardados", "El aditivo se ha actualizado.", [
         {
           text: "OK",
           onPress: () => router.back(),
         },
       ]);
     } catch {
-      Alert.alert("Error", "No se pudo actualizar el alimento.");
+      Alert.alert("Error", "No se pudo actualizar el aditivo.");
     }
   };
 
   const eliminar = async () => {
-    if (!foodId) return;
+    if (!aditivoId) return;
 
     Alert.alert(
-      "Eliminar alimento",
+      "Eliminar aditivo",
       `¿Seguro que quieres eliminar "${nombre}"?`,
       [
         { text: "Cancelar", style: "cancel" },
@@ -97,7 +95,7 @@ export default function EditarAlimentoScreen() {
           text: "Eliminar",
           style: "destructive",
           onPress: async () => {
-            await deleteFood(foodId);
+            await deleteAditivo(aditivoId);
             router.back();
           },
         },
@@ -108,7 +106,7 @@ export default function EditarAlimentoScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.loading}>Cargando alimento…</Text>
+        <Text style={styles.loading}>Cargando aditivo…</Text>
       </SafeAreaView>
     );
   }
@@ -116,28 +114,29 @@ export default function EditarAlimentoScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.title}>Editar alimento</Text>
+        <Text style={styles.title}>Editar aditivo</Text>
         <Text style={styles.subtitle}>
-          Puedes cambiar nombre, categoría, estado y nivel.
+          Puedes cambiar nombre, tipo, estado, nivel y notas.
         </Text>
 
-        <FoodForm
+        <AdditiveForm
           nombre={nombre}
           setNombre={setNombre}
-          categoriaSlug={categoriaSlug}
-          setCategoriaSlug={setCategoriaSlug}
-          clave={clave}
+          tipo={tipo}
+          setTipo={setTipo}
           estado={estado}
           setEstado={setEstado}
           histamina={histamina}
           setHistamina={setHistamina}
-          categoriasDisponibles={categorias}
+          notas={notas}
+          setNotas={setNotas}
+          tiposDisponibles={tipos}
           onSubmit={guardar}
           submitLabel="Guardar cambios"
         />
 
         <TouchableOpacity style={styles.deleteButton} onPress={eliminar}>
-          <Text style={styles.deleteButtonText}>Eliminar alimento</Text>
+          <Text style={styles.deleteButtonText}>Eliminar aditivo</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

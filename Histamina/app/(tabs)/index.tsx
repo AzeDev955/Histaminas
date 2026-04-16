@@ -29,6 +29,7 @@ type FoodListItem = {
   nombre: string;
   estado: string;
   histamina: number;
+  itemType: "food";
 };
 
 type AdditiveListItem = {
@@ -37,8 +38,10 @@ type AdditiveListItem = {
   categoriaId: string;
   categoria: string;
   nombre: string;
+  tipo: string;
   estado: string;
   histamina: number;
+  itemType: "additive";
 };
 
 type HomeListItem = FoodListItem | AdditiveListItem | CategoryItem;
@@ -69,12 +72,24 @@ export default function HomeScreen() {
     refresh,
   } = useFoods();
 
+  const FORCE_RESET_ON_BOOT = false;
+
   useEffect(() => {
     (async () => {
-      await initDb();
-      await seedDatabaseIfNeeded();
-      await refresh();
-      setReady(true);
+      try {
+        if (FORCE_RESET_ON_BOOT) {
+          await resetDatabase();
+        } else {
+          await initDb();
+        }
+
+        await seedDatabaseIfNeeded();
+        await refresh();
+        setReady(true);
+      } catch (error) {
+        console.error("Error al iniciar la base de datos:", error);
+        setReady(true);
+      }
     })();
   }, [refresh]);
 
@@ -90,6 +105,7 @@ export default function HomeScreen() {
         nombre: item.nombre,
         estado: prettyLabel(item.estado),
         histamina: item.histamina,
+        itemType: "food",
       }));
 
       let hayFiltroActivo = false;
@@ -122,15 +138,17 @@ export default function HomeScreen() {
       categoriaId: item.tipo,
       categoria: prettyLabel(item.tipo),
       nombre: item.nombre,
+      tipo: prettyLabel(item.tipo),
       estado: prettyLabel(item.estado),
       histamina: item.histamina,
+      itemType: "additive",
     }));
 
     let hayFiltroActivo = false;
 
     if (search) {
       lista = lista.filter((a) =>
-        `${a.nombre} ${a.categoria} ${a.estado}`
+        `${a.nombre} ${a.tipo} ${a.estado}`
           .toLowerCase()
           .includes(search.toLowerCase()),
       );
@@ -219,7 +237,7 @@ export default function HomeScreen() {
     }
 
     if (!mostrandoCategorias && !isCategoryItem(item)) {
-      return <ItemCard item={item} />;
+      return <ItemCard item={item} modo={modo} />;
     }
 
     return null;
@@ -310,6 +328,16 @@ export default function HomeScreen() {
               >
                 <Ionicons name="add-circle-outline" size={20} color="#FFF" />
                 <Text style={styles.addButtonText}>Añadir alimento</Text>
+              </TouchableOpacity>
+            )}
+
+            {modo === "aditivos" && (
+              <TouchableOpacity
+                style={[styles.addButton, styles.addButtonAdditive]}
+                onPress={() => router.push("/nuevo-aditivo")}
+              >
+                <Ionicons name="flask-outline" size={20} color="#FFF" />
+                <Text style={styles.addButtonText}>Añadir aditivo</Text>
               </TouchableOpacity>
             )}
 
@@ -461,6 +489,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexDirection: "row",
     gap: 8,
+  },
+
+  addButtonAdditive: {
+    backgroundColor: "#5856D6",
   },
 
   addButtonText: {

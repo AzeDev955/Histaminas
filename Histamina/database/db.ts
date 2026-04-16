@@ -26,11 +26,11 @@ export async function initDb() {
       categoria_slug TEXT NOT NULL,
       clave TEXT NOT NULL,
       nombre TEXT NOT NULL,
-      estado TEXT NOT NULL DEFAULT 'fresco',
-      histamina INTEGER NOT NULL CHECK (histamina IN (0,1,2,3)),
+      estado TEXT NOT NULL,
+      histamina INTEGER NOT NULL,
+      notas TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE(categoria_slug, clave, estado)
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS aditivos (
@@ -58,10 +58,12 @@ export async function initDb() {
 export async function resetDatabase() {
   const db = await getDb();
 
-  await db.withTransactionAsync(async () => {
-    await db.runAsync(`DELETE FROM alimentos`);
-    await db.runAsync(`DELETE FROM aditivos`);
-    await db.runAsync(`DELETE FROM categorias`);
-    await db.runAsync(`DELETE FROM app_meta`);
-  });
+  await db.execAsync(`
+    DROP TABLE IF EXISTS alimentos;
+    DROP TABLE IF EXISTS aditivos;
+    DROP TABLE IF EXISTS categorias;
+    DROP TABLE IF EXISTS app_meta;
+  `);
+
+  await initDb();
 }

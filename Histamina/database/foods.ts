@@ -7,6 +7,7 @@ export interface FoodRow {
   nombre: string;
   estado: string;
   histamina: number;
+  notas?: string | null;
 }
 
 export async function getFoodById(id: number) {
@@ -36,19 +37,21 @@ export async function addFood({
   nombre,
   estado,
   histamina,
+  notas,
 }: {
   categoriaSlug: string;
   clave: string;
   nombre: string;
   estado: string;
   histamina: number;
+  notas?: string;
 }) {
   const db = await getDb();
 
   await db.runAsync(
-    `INSERT INTO alimentos (categoria_slug, clave, nombre, estado, histamina)
-     VALUES (?, ?, ?, ?, ?)`,
-    [categoriaSlug, clave, nombre, estado, histamina],
+    `INSERT INTO alimentos (categoria_slug, clave, nombre, estado, histamina, notas)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [categoriaSlug, clave, nombre, estado, histamina, notas ?? null],
   );
 }
 
@@ -58,20 +61,27 @@ export async function updateFood({
   nombre,
   estado,
   histamina,
+  notas,
 }: {
   id: number;
   categoriaSlug: string;
   nombre: string;
   estado: string;
   histamina: number;
+  notas?: string;
 }) {
   const db = await getDb();
 
   await db.runAsync(
     `UPDATE alimentos
-     SET categoria_slug = ?, nombre = ?, estado = ?, histamina = ?, updated_at = CURRENT_TIMESTAMP
+     SET nombre = ?,
+         categoria_slug = ?,
+         estado = ?,
+         histamina = ?,
+         notas = ?,
+         updated_at = CURRENT_TIMESTAMP
      WHERE id = ?`,
-    [categoriaSlug, nombre, estado, histamina, id],
+    [nombre, categoriaSlug, estado, histamina, notas ?? null, id],
   );
 }
 
