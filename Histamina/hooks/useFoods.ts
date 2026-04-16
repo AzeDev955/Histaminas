@@ -6,6 +6,7 @@ export interface FoodItem {
   categoria_slug: string;
   clave: string;
   nombre: string;
+  estado: string;
   histamina: number;
 }
 
@@ -43,15 +44,10 @@ function getCategoryIcon(key: string): IoniconName {
     case "especias":
       return "flame";
     case "cereales":
-      return "restaurant";
     case "dulces":
-      return "restaurant";
     case "grasas":
-      return "restaurant";
     case "carnes":
-      return "restaurant";
     case "legumbres":
-      return "restaurant";
     default:
       return "restaurant";
   }
@@ -70,9 +66,9 @@ export function useFoods() {
     const db = await getDb();
 
     const alimentos = await db.getAllAsync<FoodItem>(
-      `SELECT id, categoria_slug, clave, nombre, histamina
+      `SELECT id, categoria_slug, clave, nombre, estado, histamina
        FROM alimentos
-       ORDER BY nombre COLLATE NOCASE ASC`,
+       ORDER BY nombre COLLATE NOCASE ASC, estado COLLATE NOCASE ASC`,
     );
 
     const categoriasRaw = await db.getAllAsync<{

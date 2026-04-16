@@ -26,10 +26,11 @@ export async function initDb() {
       categoria_slug TEXT NOT NULL,
       clave TEXT NOT NULL,
       nombre TEXT NOT NULL,
+      estado TEXT NOT NULL DEFAULT 'normal',
       histamina INTEGER NOT NULL CHECK (histamina IN (0,1,2,3)),
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE(categoria_slug, clave)
+      UNIQUE(categoria_slug, clave, estado)
     );
 
     CREATE TABLE IF NOT EXISTS app_meta (

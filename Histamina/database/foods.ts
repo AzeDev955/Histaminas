@@ -5,6 +5,7 @@ export interface FoodRow {
   categoria_slug: string;
   clave: string;
   nombre: string;
+  estado: string;
   histamina: number;
 }
 
@@ -12,7 +13,7 @@ export async function getFoodById(id: number) {
   const db = await getDb();
 
   return db.getFirstAsync<FoodRow>(
-    `SELECT id, categoria_slug, clave, nombre, histamina
+    `SELECT id, categoria_slug, clave, nombre, estado, histamina
      FROM alimentos
      WHERE id = ?`,
     [id],
@@ -33,19 +34,21 @@ export async function addFood({
   categoriaSlug,
   clave,
   nombre,
+  estado,
   histamina,
 }: {
   categoriaSlug: string;
   clave: string;
   nombre: string;
+  estado: string;
   histamina: number;
 }) {
   const db = await getDb();
 
   await db.runAsync(
-    `INSERT INTO alimentos (categoria_slug, clave, nombre, histamina)
-     VALUES (?, ?, ?, ?)`,
-    [categoriaSlug, clave, nombre, histamina],
+    `INSERT INTO alimentos (categoria_slug, clave, nombre, estado, histamina)
+     VALUES (?, ?, ?, ?, ?)`,
+    [categoriaSlug, clave, nombre, estado, histamina],
   );
 }
 
@@ -53,20 +56,22 @@ export async function updateFood({
   id,
   categoriaSlug,
   nombre,
+  estado,
   histamina,
 }: {
   id: number;
   categoriaSlug: string;
   nombre: string;
+  estado: string;
   histamina: number;
 }) {
   const db = await getDb();
 
   await db.runAsync(
     `UPDATE alimentos
-     SET categoria_slug = ?, nombre = ?, histamina = ?, updated_at = CURRENT_TIMESTAMP
+     SET categoria_slug = ?, nombre = ?, estado = ?, histamina = ?, updated_at = CURRENT_TIMESTAMP
      WHERE id = ?`,
-    [categoriaSlug, nombre, histamina, id],
+    [categoriaSlug, nombre, estado, histamina, id],
   );
 }
 

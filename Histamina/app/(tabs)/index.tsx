@@ -19,6 +19,7 @@ import { initDb, resetDatabase } from "../../database/db";
 import { seedDatabaseIfNeeded } from "../../database/seed";
 import { useFoods, CategoryItem } from "../../hooks/useFoods";
 import { router } from "expo-router";
+import { TEXTO } from "@/constants/msg";
 
 type AlimentoListItem = {
   id: string;
@@ -26,6 +27,7 @@ type AlimentoListItem = {
   categoriaId: string;
   categoria: string;
   nombre: string;
+  estado: string;
   histamina: number;
 };
 
@@ -33,6 +35,10 @@ type HomeListItem = AlimentoListItem | CategoryItem;
 
 function isCategoryItem(item: HomeListItem): item is CategoryItem {
   return "cantidad" in item && "icon" in item;
+}
+
+function prettyLabel(texto: string) {
+  return texto.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 }
 
 export default function HomeScreen() {
@@ -59,10 +65,9 @@ export default function HomeScreen() {
       id: String(item.id),
       dbId: item.id,
       categoriaId: item.categoria_slug,
-      categoria: item.categoria_slug
-        .replace(/_/g, " ")
-        .replace(/\b\w/g, (l) => l.toUpperCase()),
+      categoria: prettyLabel(item.categoria_slug),
       nombre: item.nombre,
+      estado: prettyLabel(item.estado),
       histamina: item.histamina,
     }));
 
@@ -70,7 +75,7 @@ export default function HomeScreen() {
 
     if (search) {
       lista = lista.filter((a) =>
-        a.nombre.toLowerCase().includes(search.toLowerCase()),
+        `${a.nombre} ${a.estado}`.toLowerCase().includes(search.toLowerCase()),
       );
       hayFiltroActivo = true;
     }
@@ -106,15 +111,12 @@ export default function HomeScreen() {
           onPress: async () => {
             try {
               setReady(false);
-
               await resetDatabase();
               await initDb();
               await seedDatabaseIfNeeded();
               await refresh();
-
               volverAlIndice();
               setReady(true);
-
               Alert.alert("Hecho", "La base de datos se ha restaurado.");
             } catch (error) {
               setReady(true);
@@ -184,19 +186,13 @@ export default function HomeScreen() {
                   {search
                     ? "Resultados"
                     : categoriaSeleccionada
-                      ? categoriaSeleccionada
-                          .replace(/_/g, " ")
-                          .replace(/\b\w/g, (l) => l.toUpperCase())
+                      ? prettyLabel(categoriaSeleccionada)
                       : "Mi Compra"}
                 </Text>
               </View>
 
               {!search && !categoriaSeleccionada && (
-                <Text style={styles.infoSubtitle}>
-                  Puedes comer cualquier cosa del nivel 0 y 1. El nivel 2 hay
-                  que probar tolerancia y deberíamos evitar el nivel 3. Te amo,
-                  siempre
-                </Text>
+                <Text style={styles.infoSubtitle}>{TEXTO}</Text>
               )}
             </View>
 

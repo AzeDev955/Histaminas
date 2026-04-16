@@ -15,6 +15,8 @@ interface FoodFormProps {
   setCategoriaSlug: (value: string) => void;
   clave: string;
   setClave?: (value: string) => void;
+  estado: string;
+  setEstado: (value: string) => void;
   histamina: number;
   setHistamina: (value: number) => void;
   categoriasDisponibles: string[];
@@ -23,8 +25,25 @@ interface FoodFormProps {
   showClave?: boolean;
 }
 
-function prettyCategoryName(slug: string) {
-  return slug.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+const ESTADOS_DISPONIBLES = [
+  "normal",
+  "fresco",
+  "congelado",
+  "enlatado",
+  "fermentado",
+  "ahumado",
+  "curado",
+  "madurado",
+  "seco",
+  "cocido",
+  "pasteurizado",
+  "uht",
+  "encurtido",
+  "marinado",
+];
+
+function prettyLabel(texto: string) {
+  return texto.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 }
 
 export default function FoodForm({
@@ -34,6 +53,8 @@ export default function FoodForm({
   setCategoriaSlug,
   clave,
   setClave,
+  estado,
+  setEstado,
   histamina,
   setHistamina,
   categoriasDisponibles,
@@ -48,7 +69,7 @@ export default function FoodForm({
         style={styles.input}
         value={nombre}
         onChangeText={setNombre}
-        placeholder="Ej. Yogur natural"
+        placeholder="Ej. Atún"
         placeholderTextColor="#8E8E93"
       />
 
@@ -59,7 +80,7 @@ export default function FoodForm({
             style={styles.input}
             value={clave}
             onChangeText={setClave}
-            placeholder="Ej. yogur_natural"
+            placeholder="Ej. atun"
             autoCapitalize="none"
             placeholderTextColor="#8E8E93"
           />
@@ -67,22 +88,37 @@ export default function FoodForm({
       )}
 
       <Text style={styles.label}>Categoría</Text>
-      <View style={styles.categoryWrap}>
+      <View style={styles.wrap}>
         {categoriasDisponibles.map((cat) => {
           const active = cat === categoriaSlug;
+
           return (
             <TouchableOpacity
               key={cat}
-              style={[styles.categoryChip, active && styles.categoryChipActive]}
+              style={[styles.chip, active && styles.chipActive]}
               onPress={() => setCategoriaSlug(cat)}
             >
-              <Text
-                style={[
-                  styles.categoryChipText,
-                  active && styles.categoryChipTextActive,
-                ]}
-              >
-                {prettyCategoryName(cat)}
+              <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                {prettyLabel(cat)}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      <Text style={styles.label}>Estado</Text>
+      <View style={styles.wrap}>
+        {ESTADOS_DISPONIBLES.map((itemEstado) => {
+          const active = itemEstado === estado;
+
+          return (
+            <TouchableOpacity
+              key={itemEstado}
+              style={[styles.chip, active && styles.chipActive]}
+              onPress={() => setEstado(itemEstado)}
+            >
+              <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                {prettyLabel(itemEstado)}
               </Text>
             </TouchableOpacity>
           );
@@ -90,7 +126,7 @@ export default function FoodForm({
       </View>
 
       <Text style={styles.label}>Nivel de histamina</Text>
-      <View style={styles.levelWrap}>
+      <View style={styles.wrap}>
         {[0, 1, 2, 3].map((nivel) => {
           const config = getHistaminaConfig(nivel);
           const active = nivel === histamina;
@@ -130,6 +166,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 30,
   },
+
   label: {
     fontSize: 14,
     fontWeight: "700",
@@ -137,6 +174,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 16,
   },
+
   input: {
     backgroundColor: "#FFF",
     borderRadius: 12,
@@ -147,12 +185,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E5EA",
   },
-  categoryWrap: {
+
+  wrap: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
   },
-  categoryChip: {
+
+  chip: {
     backgroundColor: "#FFF",
     borderWidth: 1,
     borderColor: "#D1D1D6",
@@ -160,31 +200,32 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 14,
   },
-  categoryChipActive: {
+
+  chipActive: {
     backgroundColor: "#007AFF",
     borderColor: "#007AFF",
   },
-  categoryChipText: {
+
+  chipText: {
     color: "#1C1C1E",
     fontWeight: "600",
   },
-  categoryChipTextActive: {
+
+  chipTextActive: {
     color: "#FFF",
   },
-  levelWrap: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
+
   levelButton: {
     borderWidth: 1.5,
     borderRadius: 999,
     paddingVertical: 10,
     paddingHorizontal: 14,
   },
+
   levelButtonText: {
     fontWeight: "700",
   },
+
   submitButton: {
     marginTop: 28,
     backgroundColor: "#007AFF",
@@ -192,6 +233,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: "center",
   },
+
   submitButtonText: {
     color: "#FFF",
     fontSize: 16,

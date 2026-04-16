@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text } from "react-native";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import FoodForm from "../../components/FoodForm";
@@ -9,7 +15,6 @@ import {
   getFoodById,
   updateFood,
 } from "../../database/foods";
-import { TouchableOpacity } from "react-native";
 
 export default function EditarAlimentoScreen() {
   const params = useLocalSearchParams<{ id: string }>();
@@ -18,6 +23,7 @@ export default function EditarAlimentoScreen() {
   const [nombre, setNombre] = useState("");
   const [clave, setClave] = useState("");
   const [categoriaSlug, setCategoriaSlug] = useState("");
+  const [estado, setEstado] = useState("normal");
   const [histamina, setHistamina] = useState(0);
   const [categorias, setCategorias] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,6 +46,7 @@ export default function EditarAlimentoScreen() {
         setNombre(food.nombre);
         setClave(food.clave);
         setCategoriaSlug(food.categoria_slug);
+        setEstado(food.estado);
         setHistamina(food.histamina);
       }
 
@@ -60,6 +67,7 @@ export default function EditarAlimentoScreen() {
         id: foodId,
         nombre: nombre.trim(),
         categoriaSlug,
+        estado,
         histamina,
       });
 
@@ -107,7 +115,7 @@ export default function EditarAlimentoScreen() {
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.title}>Editar alimento</Text>
         <Text style={styles.subtitle}>
-          Puedes cambiar nombre, categoría y nivel.
+          Puedes cambiar nombre, categoría, estado y nivel.
         </Text>
 
         <FoodForm
@@ -116,6 +124,8 @@ export default function EditarAlimentoScreen() {
           categoriaSlug={categoriaSlug}
           setCategoriaSlug={setCategoriaSlug}
           clave={clave}
+          estado={estado}
+          setEstado={setEstado}
           histamina={histamina}
           setHistamina={setHistamina}
           categoriasDisponibles={categorias}
@@ -133,12 +143,18 @@ export default function EditarAlimentoScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F5F5F7" },
-  scroll: { paddingTop: 10, paddingBottom: 40 },
+
+  scroll: {
+    paddingTop: 10,
+    paddingBottom: 40,
+  },
+
   loading: {
     padding: 20,
     fontSize: 16,
     color: "#6B7280",
   },
+
   title: {
     fontSize: 28,
     fontWeight: "800",
@@ -146,12 +162,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 6,
   },
+
   subtitle: {
     fontSize: 15,
     color: "#6B7280",
     paddingHorizontal: 20,
     marginBottom: 8,
   },
+
   deleteButton: {
     marginHorizontal: 20,
     marginTop: 10,
@@ -160,6 +178,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: "center",
   },
+
   deleteButtonText: {
     color: "#FFF",
     fontSize: 16,

@@ -19,6 +19,7 @@ export default function NuevoAlimentoScreen() {
   const [nombre, setNombre] = useState("");
   const [clave, setClave] = useState("");
   const [categoriaSlug, setCategoriaSlug] = useState("");
+  const [estado, setEstado] = useState("normal");
   const [histamina, setHistamina] = useState(0);
   const [categorias, setCategorias] = useState<string[]>([]);
 
@@ -27,6 +28,7 @@ export default function NuevoAlimentoScreen() {
       const rows = await getCategorySlugs();
       const slugs = rows.map((r) => r.categoria_slug);
       setCategorias(slugs);
+
       if (slugs.length > 0) {
         setCategoriaSlug(slugs[0]);
       }
@@ -51,6 +53,7 @@ export default function NuevoAlimentoScreen() {
         nombre: nombre.trim(),
         clave: finalClave,
         categoriaSlug,
+        estado,
         histamina,
       });
 
@@ -63,7 +66,7 @@ export default function NuevoAlimentoScreen() {
     } catch (error) {
       Alert.alert(
         "No se pudo guardar",
-        "Puede que ya exista un alimento con esa clave en la categoría.",
+        "Puede que ya exista este alimento con el mismo estado dentro de la categoría.",
       );
     }
   };
@@ -83,6 +86,8 @@ export default function NuevoAlimentoScreen() {
           setCategoriaSlug={setCategoriaSlug}
           clave={clave}
           setClave={setClave}
+          estado={estado}
+          setEstado={setEstado}
           histamina={histamina}
           setHistamina={setHistamina}
           categoriasDisponibles={categorias}
@@ -97,7 +102,12 @@ export default function NuevoAlimentoScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F5F5F7" },
-  scroll: { paddingTop: 10, paddingBottom: 40 },
+
+  scroll: {
+    paddingTop: 10,
+    paddingBottom: 40,
+  },
+
   title: {
     fontSize: 28,
     fontWeight: "800",
@@ -105,6 +115,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 6,
   },
+
   subtitle: {
     fontSize: 15,
     color: "#6B7280",
