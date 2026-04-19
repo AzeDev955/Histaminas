@@ -8,7 +8,7 @@ export const MOCK_ADITIVOS = {
         histamina: 3,
         confianza: "alta",
         notas:
-          "Grupo con mejor señal de riesgo en personas sensibles a histamina.",
+          "Grupo con señal más fuerte: pseudoalergia, broncoespasmo en personas susceptibles y datos de degranulación/liberación de histamina.",
         alias: ["E220", "E221", "E222", "E223", "E224", "E226", "E227", "E228"],
       },
 
@@ -52,6 +52,30 @@ export const MOCK_ADITIVOS = {
         confianza: "alta",
         alias: ["E224"],
       },
+      sulfito_calcico: {
+        nombre: "Sulfito cálcico",
+        tipo: "conservante",
+        estado: "procesado",
+        histamina: 3,
+        confianza: "alta",
+        alias: ["E226"],
+      },
+      bisulfito_calcico: {
+        nombre: "Bisulfito cálcico",
+        tipo: "conservante",
+        estado: "procesado",
+        histamina: 3,
+        confianza: "alta",
+        alias: ["E227"],
+      },
+      bisulfito_potasico: {
+        nombre: "Bisulfito potásico",
+        tipo: "conservante",
+        estado: "procesado",
+        histamina: 3,
+        confianza: "alta",
+        alias: ["E228"],
+      },
 
       benzoatos: {
         nombre: "Benzoatos",
@@ -60,7 +84,7 @@ export const MOCK_ADITIVOS = {
         histamina: 2,
         confianza: "media",
         notas:
-          "Señal relevante en subgrupos sensibles; mejor evitar por defecto.",
+          "Cautela relevante en subgrupos: urticaria/angioedema minoritaria y señal de liberación de histamina en mucosa gástrica humana.",
         alias: ["E210", "E211", "E212", "E213"],
       },
       acido_benzoico: {
@@ -102,6 +126,8 @@ export const MOCK_ADITIVOS = {
         estado: "procesado",
         histamina: 2,
         confianza: "media_baja",
+        notas:
+          "Señal no tan fuerte como sulfitos, pero con exacerbación de urticaria descrita y prudencia razonable en perfil sensible.",
         alias: ["E320"],
       },
       bht: {
@@ -110,6 +136,8 @@ export const MOCK_ADITIVOS = {
         estado: "procesado",
         histamina: 2,
         confianza: "media_baja",
+        notas:
+          "Modelo animal con aumento de degranulación mastocitaria; tratar como cautela relevante en perfil histamínico sensible.",
         alias: ["E321"],
       },
 
@@ -136,6 +164,8 @@ export const MOCK_ADITIVOS = {
         estado: "procesado",
         histamina: 1,
         confianza: "baja",
+        notas:
+          "Cautela provisional: la preocupación principal no es histamina y algunos modelos alimentarios reducen aminas, pero hay señal aislada.",
         alias: ["E249", "E250", "E251", "E252"],
       },
       nitrito_potasico: {
@@ -177,6 +207,8 @@ export const MOCK_ADITIVOS = {
         estado: "procesado",
         histamina: 1,
         confianza: "baja",
+        notas:
+          "Baja señal sistémica; pueden inhibir formación bacteriana de histamina. E203 queda como código legado fuera de la UE.",
         alias: ["E200", "E202", "E203"],
       },
       acido_sorbico: {
@@ -194,6 +226,15 @@ export const MOCK_ADITIVOS = {
         histamina: 1,
         confianza: "baja",
         alias: ["E202"],
+      },
+      sorbato_calcico: {
+        nombre: "Sorbato cálcico",
+        tipo: "conservante",
+        estado: "procesado",
+        histamina: 1,
+        confianza: "baja",
+        notas: "Código legado: retirado en la UE por datos genotóxicos insuficientes, no por señal histamínica fuerte.",
+        alias: ["E203"],
       },
 
       acido_ascorbico: {
@@ -260,7 +301,216 @@ export const MOCK_ADITIVOS = {
         estado: "procesado",
         histamina: 0,
         confianza: "baja",
+        notas:
+          "Riesgo histamínico alimentario provisionalmente bajo; evidencia insuficiente para HIT/DAO.",
         alias: ["E385"],
+      },
+
+      parabenos_alimentarios: {
+        nombre: "Parabenos alimentarios",
+        tipo: "conservante",
+        estado: "mezcla",
+        histamina: 1,
+        confianza: "baja",
+        notas:
+          "Señal clínica rara y sin evidencia sólida específica de HIT/DAO; mantener como cautela leve.",
+        alias: ["E214", "E215", "E218", "E219"],
+      },
+      etil_parahidroxibenzoato: {
+        nombre: "Etil p-hidroxibenzoato",
+        tipo: "conservante",
+        estado: "procesado",
+        histamina: 1,
+        confianza: "baja",
+        alias: ["E214"],
+      },
+      sodio_etilparabeno: {
+        nombre: "Sodio etilparabeno",
+        tipo: "conservante",
+        estado: "procesado",
+        histamina: 1,
+        confianza: "baja",
+        alias: ["E215"],
+      },
+      metil_parahidroxibenzoato: {
+        nombre: "Metil p-hidroxibenzoato",
+        tipo: "conservante",
+        estado: "procesado",
+        histamina: 1,
+        confianza: "baja",
+        alias: ["E218"],
+      },
+      sodio_metilparabeno: {
+        nombre: "Sodio metilparabeno",
+        tipo: "conservante",
+        estado: "procesado",
+        histamina: 1,
+        confianza: "baja",
+        alias: ["E219"],
+      },
+
+      carragenanos: {
+        nombre: "Carragenanos",
+        tipo: "gelificante",
+        estado: "procesado",
+        histamina: 1,
+        confianza: "baja",
+        notas:
+          "Riesgo indirecto bajo por posible inflamación intestinal/microbiota; no liberador histamínico directo convincente.",
+        alias: ["E407", "E407a", "Carragenano", "Alga Eucheuma procesada"],
+      },
+      alginatos: {
+        nombre: "Alginatos",
+        tipo: "gelificante",
+        estado: "mezcla",
+        histamina: 0,
+        confianza: "media",
+        notas:
+          "Señal preclínica compatible con inhibición de liberación de histamina; permitir por defecto.",
+        alias: ["E400", "E401", "E402", "E403", "E404", "E405"],
+      },
+      acido_alginico: {
+        nombre: "Ácido algínico",
+        tipo: "gelificante",
+        estado: "procesado",
+        histamina: 0,
+        confianza: "media",
+        alias: ["E400"],
+      },
+      pectina: {
+        nombre: "Pectina",
+        tipo: "gelificante",
+        estado: "procesado",
+        histamina: 0,
+        confianza: "media",
+        notas:
+          "Datos preclínicos favorables sobre degranulación/histamina; sin señal práctica de riesgo.",
+        alias: ["E440"],
+      },
+      agar: {
+        nombre: "Agar",
+        tipo: "gelificante",
+        estado: "procesado",
+        histamina: 0,
+        confianza: "muy_baja",
+        alias: ["E406"],
+      },
+      goma_guar: {
+        nombre: "Goma guar",
+        tipo: "gelificante",
+        estado: "procesado",
+        histamina: 1,
+        confianza: "baja",
+        notas:
+          "Riesgo indirecto bajo; la señal descrita es más de alergia clásica/ocupacional que de HIT.",
+        alias: ["E412", "Guar gum"],
+      },
+      goma_xantana: {
+        nombre: "Goma xantana",
+        tipo: "gelificante",
+        estado: "procesado",
+        histamina: 0,
+        confianza: "muy_baja",
+        alias: ["E415", "Xanthan gum"],
+      },
+      goma_garrofin: {
+        nombre: "Goma garrofín",
+        tipo: "gelificante",
+        estado: "procesado",
+        histamina: 0,
+        confianza: "muy_baja",
+        alias: ["E410", "Locust bean gum", "Carob gum"],
+      },
+
+      aspartamo: {
+        nombre: "Aspartamo",
+        tipo: "edulcorante",
+        estado: "procesado",
+        histamina: 0,
+        confianza: "media",
+        notas:
+          "No liberador en estudios directos revisados; sin más urticaria/angioedema que placebo en ensayo doble ciego.",
+        alias: ["E951", "Aspartame"],
+      },
+      acesulfamo_k: {
+        nombre: "Acesulfamo K",
+        tipo: "edulcorante",
+        estado: "procesado",
+        histamina: 1,
+        confianza: "baja",
+        notas:
+          "Cautela indirecta por microbiota/inflamación en modelos preclínicos; sin evidencia directa de aumento de histamina o bloqueo DAO.",
+        alias: ["E950", "Acesulfame potassium"],
+      },
+      sucralosa: {
+        nombre: "Sucralosa",
+        tipo: "edulcorante",
+        estado: "procesado",
+        histamina: 1,
+        confianza: "baja",
+        notas:
+          "Cautela indirecta por disbiosis/inflamación preclínica; no hay evidencia directa de HIT/DAO.",
+        alias: ["E955", "Sucralose"],
+      },
+      sacarina: {
+        nombre: "Sacarina",
+        tipo: "edulcorante",
+        estado: "procesado",
+        histamina: 1,
+        confianza: "baja",
+        notas:
+          "Evidencia mixta sobre microbiota; tratar como cautela leve, no como liberador demostrado.",
+        alias: ["E954", "Saccharins"],
+      },
+      ciclamatos: {
+        nombre: "Ciclamatos",
+        tipo: "edulcorante",
+        estado: "procesado",
+        histamina: 0,
+        confianza: "muy_baja",
+        alias: ["E952", "Cyclamates"],
+      },
+      glucosidos_de_esteviol: {
+        nombre: "Glucósidos de esteviol",
+        tipo: "edulcorante",
+        estado: "procesado",
+        histamina: 0,
+        confianza: "baja",
+        alias: ["E960", "Steviol glycosides"],
+      },
+      polioles_comunes: {
+        nombre: "Polioles comunes",
+        tipo: "edulcorante",
+        estado: "mezcla",
+        histamina: 0,
+        confianza: "media",
+        notas:
+          "No contienen histamina; el problema típico es digestivo/osmótico, no histamínico.",
+        alias: ["E420", "E967", "E968", "Sorbitol", "Xilitol", "Eritritol"],
+      },
+      sorbitol: {
+        nombre: "Sorbitol",
+        tipo: "edulcorante",
+        estado: "procesado",
+        histamina: 0,
+        confianza: "media",
+        alias: ["E420"],
+      },
+      xilitol: {
+        nombre: "Xilitol",
+        tipo: "edulcorante",
+        estado: "procesado",
+        histamina: 0,
+        confianza: "media",
+        alias: ["E967"],
+      },
+      eritritol: {
+        nombre: "Eritritol",
+        tipo: "edulcorante",
+        estado: "procesado",
+        histamina: 0,
+        confianza: "media",
+        alias: ["E968"],
       },
     },
   },

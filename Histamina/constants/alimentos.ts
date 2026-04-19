@@ -83,44 +83,54 @@ export const MOCK_DATA = {
       limon: {
         nombre: "Limón",
         estado: "fresco",
-        histamina: 3,
+        histamina: 2,
       },
       naranja: {
         nombre: "Naranja",
         estado: "fresco",
-        histamina: 3,
+        histamina: 2,
+      },
+      mandarina: {
+        nombre: "Mandarina",
+        estado: "fresco",
+        histamina: 2,
+      },
+      pomelo: {
+        nombre: "Pomelo",
+        estado: "fresco",
+        histamina: 2,
       },
       citrico_generico: {
         nombre: "Cítrico",
         estado: "fresco",
-        histamina: 3,
+        histamina: 2,
       },
 
       platano: {
         nombre: "Plátano",
         estado: "fresco",
-        histamina: 3,
+        histamina: 2,
       },
       pina: {
         nombre: "Piña",
         estado: "fresco",
-        histamina: 3,
+        histamina: 1,
       },
       kiwi: {
         nombre: "Kiwi",
         estado: "fresco",
-        histamina: 3,
+        histamina: 1,
       },
 
       pera: {
         nombre: "Pera",
         estado: "fresco",
-        histamina: 3,
+        histamina: 1,
       },
       papaya: {
         nombre: "Papaya",
         estado: "fresco",
-        histamina: 3,
+        histamina: 1,
       },
       guayaba: {
         nombre: "Guayaba",
@@ -154,10 +164,20 @@ export const MOCK_DATA = {
         estado: "fresco",
         histamina: 0,
       },
+      nectarina: {
+        nombre: "Nectarina",
+        estado: "fresco",
+        histamina: 0,
+      },
       albaricoque: {
         nombre: "Albaricoque",
         estado: "fresco",
         histamina: 0,
+      },
+      ciruela: {
+        nombre: "Ciruela",
+        estado: "fresco",
+        histamina: 1,
       },
       melon: {
         nombre: "Melón",
@@ -225,12 +245,12 @@ export const MOCK_DATA = {
       sandia: {
         nombre: "Sandía",
         estado: "fresco",
-        histamina: 0,
+        histamina: 1,
       },
       uva: {
         nombre: "Uva",
         estado: "fresco",
-        histamina: 0,
+        histamina: 1,
       },
       granada: {
         nombre: "Granada",
@@ -263,6 +283,26 @@ export const MOCK_DATA = {
         nombre: "Castaña",
         estado: "seco",
         histamina: 0,
+      },
+      higo: {
+        nombre: "Higo",
+        estado: "fresco",
+        histamina: 1,
+      },
+      datil: {
+        nombre: "Dátil",
+        estado: "seco",
+        histamina: 0,
+      },
+      higo_seco: {
+        nombre: "Higo seco",
+        estado: "seco",
+        histamina: 1,
+      },
+      pasas: {
+        nombre: "Pasas",
+        estado: "seco",
+        histamina: 2,
       },
     },
 
@@ -349,6 +389,8 @@ export const MOCK_DATA = {
 
     carnes: {
       jamon_curado: { nombre: "Jamón", estado: "curado", histamina: 3 },
+      jamon_serrano: { nombre: "Jamón serrano", estado: "curado", histamina: 3 },
+      lomo_embuchado: { nombre: "Lomo embuchado", estado: "curado", histamina: 3 },
       bacon_ahumado: { nombre: "Bacon", estado: "ahumado", histamina: 3 },
 
       salami: { nombre: "Salami", estado: "curado", histamina: 3 },
@@ -363,10 +405,41 @@ export const MOCK_DATA = {
         estado: "procesado",
         histamina: 2,
       },
+      hamburguesa_industrial: {
+        nombre: "Hamburguesa industrial",
+        estado: "procesado",
+        histamina: 2,
+      },
+      pollo_picado: {
+        nombre: "Pollo picado",
+        estado: "procesado",
+        histamina: 2,
+      },
+      jamon_cocido: {
+        nombre: "Jamón cocido",
+        estado: "cocido",
+        histamina: 2,
+      },
+      mortadela: {
+        nombre: "Mortadela",
+        estado: "cocido",
+        histamina: 2,
+      },
       salchicha: { nombre: "Salchicha", estado: "cocido", histamina: 2 },
+      salchicha_fresca: {
+        nombre: "Salchicha fresca",
+        estado: "procesado",
+        histamina: 2,
+      },
+      salchicha_fermentada: {
+        nombre: "Salchicha fermentada",
+        estado: "fermentado",
+        histamina: 3,
+      },
 
-      pollo_fresco: { nombre: "Pollo", estado: "fresco", histamina: 0 },
+      pollo_fresco: { nombre: "Pollo", estado: "fresco", histamina: 1 },
       pollo_congelado: { nombre: "Pollo", estado: "congelado", histamina: 0 },
+      pavo_fresco: { nombre: "Pavo", estado: "fresco", histamina: 1 },
 
       ternera_fresca: { nombre: "Ternera", estado: "fresco", histamina: 0 },
       ternera_congelada: {
@@ -375,8 +448,19 @@ export const MOCK_DATA = {
         histamina: 0,
       },
 
-      cerdo_fresco: { nombre: "Cerdo", estado: "fresco", histamina: 0 },
+      cordero_fresco: { nombre: "Cordero", estado: "fresco", histamina: 0 },
+      cerdo_fresco: { nombre: "Cerdo", estado: "fresco", histamina: 1 },
       cerdo_congelado: { nombre: "Cerdo", estado: "congelado", histamina: 0 },
+      carne_al_vacio: {
+        nombre: "Carne al vacío",
+        estado: "envasado",
+        histamina: 1,
+      },
+      carne_atmosfera_modificada: {
+        nombre: "Carne en atmósfera modificada",
+        estado: "envasado",
+        histamina: 1,
+      },
     },
 
     pescados: {
@@ -535,7 +619,7 @@ export const MOCK_DATA = {
       queso_feta: { nombre: "Queso feta", estado: "madurado", histamina: 2 },
 
       leche_cruda: { nombre: "Leche", estado: "crudo", histamina: 1 },
-      buttermilk: { nombre: "Buttermilk", estado: "fermentado", histamina: 1 },
+      buttermilk: { nombre: "Buttermilk", estado: "fermentado", histamina: 2 },
       queso_cabra_fresco: {
         nombre: "Queso de cabra",
         estado: "fresco",
@@ -551,20 +635,25 @@ export const MOCK_DATA = {
         estado: "pasteurizado",
         histamina: 0,
       },
-      mantequilla: { nombre: "Mantequilla", estado: "normal", histamina: 0 },
-      nata: { nombre: "Nata", estado: "normal", histamina: 0 },
+      mantequilla: { nombre: "Mantequilla", estado: "normal", histamina: 1 },
+      nata: { nombre: "Nata", estado: "normal", histamina: 1 },
       suero_de_leche: {
         nombre: "Suero de leche",
         estado: "normal",
-        histamina: 0,
+        histamina: 1,
       },
 
-      queso_crema: { nombre: "Queso crema", estado: "fresco", histamina: 0 },
-      mozzarella: { nombre: "Mozzarella", estado: "fresco", histamina: 0 },
-      requeson: { nombre: "Requesón", estado: "fresco", histamina: 0 },
-      cottage: { nombre: "Queso cottage", estado: "fresco", histamina: 0 },
+      queso_crema: { nombre: "Queso crema", estado: "fresco", histamina: 1 },
+      mozzarella: { nombre: "Mozzarella", estado: "fresco", histamina: 1 },
+      requeson: { nombre: "Requesón", estado: "fresco", histamina: 1 },
+      cottage: { nombre: "Queso cottage", estado: "fresco", histamina: 1 },
       mascarpone: { nombre: "Mascarpone", estado: "fresco", histamina: 0 },
       ricotta: { nombre: "Ricotta", estado: "fresco", histamina: 0 },
+      helado_lacteo_natural: {
+        nombre: "Helado lácteo natural",
+        estado: "procesado",
+        histamina: 1,
+      },
     },
 
     huevos: {
